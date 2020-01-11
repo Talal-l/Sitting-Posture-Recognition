@@ -1,3 +1,4 @@
+import sys
 import cv2
 import math
 import time
@@ -88,7 +89,7 @@ def process (input_image, params, model_params):
     checkHandFold(all_peaks)
     print()
     print()
-    return canvas
+    return canvas,position
 
 
 def checkPosition(all_peaks):
@@ -209,12 +210,13 @@ def prinfTick(i):
 
 if __name__ == '__main__':
 
+    cameraIndex = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     tic = time.time()
     print('start processing...')
     model = get_testing_model()
     model.load_weights('./model/keras/model.h5')
     
-    cap=cv2.VideoCapture(0)
+    cap=cv2.VideoCapture(cameraIndex)
     vi=cap.isOpened()
 
     if(vi == True):
@@ -227,8 +229,14 @@ if __name__ == '__main__':
         
             ret,frame=cap.read()
             params, model_params = config_reader()
-            canvas = process(frame, params, model_params)    
-            cv2.imshow("capture",canvas) 
+            canvas, position = process(frame, params, model_params)    
+            if (position == 1):
+                print("Hunchback")
+            elif (position == -1):
+                print ("Reclined")
+            else:
+                print("Straight")
+                cv2.imshow("capture",canvas) 
             if cv2.waitKey(1) & 0xFF==ord('q'):
                 break
         cap.release()
